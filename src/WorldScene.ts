@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 
+const WORLD_W = 8000
+
 export class WorldScene extends Phaser.Scene {
   private player!: Phaser.GameObjects.Rectangle;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -9,14 +11,29 @@ export class WorldScene extends Phaser.Scene {
   }
 
   create() {
-    const ground = this.add.rectangle(640, 700, 1280, 40, 0x4caf50);
+    this.physics.world.setBounds(0, 0, WORLD_W, 720);
+    this.cameras.main.setBounds(0, 0, WORLD_W, 720);
+
+    const ground = this.add.rectangle(WORLD_W / 2, 700, WORLD_W, 40, 0x4caf50);
     this.physics.add.existing(ground, true);
 
-    this.player = this.add.rectangle(200, 500, 32, 48, 0x3d6ee8);
+    this.player = this.add.rectangle(200, 500, 32, 48, 0x3d6ee8); // #3d6ee8
     this.physics.add.existing(this.player);
+    const body = this.player.body as Phaser.Physics.Arcade.Body;
+    body.setCollideWorldBounds(true);
+    this.cameras.main.startFollow(this.player, true, 0.1, 0.1)
+
     this.physics.add.collider(this.player, ground);
 
     this.cursors = this.input.keyboard!.createCursorKeys();
+
+    const platforms = [
+      this.add.rectangle(600, 580, 200, 20, 0x8d6e63),
+      this.add.rectangle(900, 480, 200, 20, 0x8d6e63),
+      this.add.rectangle(1250, 580, 200, 20, 0x8d6e63),
+    ];
+    platforms.forEach((p) => this.physics.add.existing(p, true));
+    this.physics.add.collider(this.player, platforms);
   }
 
   update() {
@@ -28,6 +45,6 @@ export class WorldScene extends Phaser.Scene {
     else if (right.isDown) dir = 1;
     body.setVelocityX(dir * 500);
 
-    if (this.cursors.up.isDown && body.blocked.down) body.setVelocityY(-700);
+    if (this.cursors.up.isDown && body.blocked.down) body.setVelocityY(-760);
   }
 }
